@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulador – Ecuaciones Diferenciales (Parcial)</title>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--az:#0B2A6F;--ve:#17763A;--do:#F2B705;--rj:#B3261E;--tx:#16181D;--bg:#EEF2FA}
+*{box-sizing:border-box}body{margin:0;font:17px 'Source Sans 3',sans-serif;color:var(--tx);background:var(--bg)}
+h1,h2,.eq,.o{font-family:'STIX Two Text',serif}h1{color:var(--az);font-size:30px}
+header{background:var(--az);color:#fff;padding:10px 20px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:4px solid var(--do)}
+#bar{height:6px;background:#cbd5e8}#bar i{display:block;height:100%;background:var(--do);width:0;transition:.4s}
+main{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;padding:18px;max-width:1200px;margin:auto}
+@media(max-width:850px){main{grid-template-columns:1fr}}
+.card{background:#fff;border:2px solid var(--tx);border-radius:14px;padding:22px}.tc{text-align:center}
+#stage{height:400px;border-radius:14px;background:linear-gradient(160deg,var(--az),#07173D);border:2px solid var(--tx);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-size:90px}
+#stage canvas{width:100%;height:100%;display:block}
+button{font:600 16px 'Source Sans 3',sans-serif}.b{background:var(--az);color:#fff;border:0;border-radius:10px;padding:10px 18px;margin:4px;cursor:pointer}
+.b:hover:not(:disabled){background:var(--do);color:var(--tx)}.b:disabled{opacity:.4;cursor:not-allowed}
+.o{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border:2px solid var(--tx);border-radius:10px;background:#fff;cursor:pointer;font-size:19px}
+.o:hover{border-color:var(--do);background:#FFF8DC}.o.ok{border-color:var(--ve);background:#E3F5E8}.o.no{border-color:var(--rj);background:#FDE7E5}
+.eq{font-size:26px;background:#F6F8FD;border-left:6px solid var(--do);padding:10px 14px;margin:12px 0}
+.fb{padding:10px;border-radius:8px;margin:10px 0}.fb.g{background:#E3F5E8;border:2px solid var(--ve)}.fb.r{background:#FDE7E5;border:2px solid var(--rj)}
+.hn{background:#FFF3C4;border:2px dashed var(--do);padding:8px;border-radius:8px;margin:8px 0}
+#sub{position:fixed;bottom:0;left:0;right:0;background:#000e;color:#fff;padding:12px 20px;text-align:center;display:none;z-index:9}
+input[type=text]{width:80%;padding:12px;font-size:18px;border:2px solid var(--tx);border-radius:10px}.er{color:var(--rj);font-weight:600}
+.ins{background:#E8F0FF;border-left:6px solid var(--az);padding:10px 14px;border-radius:8px;margin:12px 0}
+.ins h3,.esq h3{margin:0 0 8px;font:700 20px 'STIX Two Text',serif;color:var(--az)}.ins small{display:block;margin-top:6px;color:#33405e}
+.esq{background:#F6F8FD;border:2px solid var(--az);border-radius:10px;padding:12px 14px;margin:12px 0}
+.flow{list-style:none;margin:0;padding:0;counter-reset:s}
+.flow li{counter-increment:s;position:relative;background:#fff;border:2px solid var(--az);border-radius:8px;padding:8px 10px 8px 46px;margin:0 0 20px;font-size:16px}
+.flow li:before{content:counter(s);position:absolute;left:9px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--az);color:#fff;text-align:center;line-height:26px;font-weight:700}
+.flow li:not(:last-child):after{content:'▼';position:absolute;left:50%;bottom:-19px;color:var(--do);font-size:14px;line-height:16px}
+.flow li:last-child{margin-bottom:0;border-color:var(--ve)}.flow li:last-child:before{background:var(--ve)}
+#stage{position:sticky;top:12px;align-self:start}@media(max-width:850px){#stage{position:static}}
+.wk{background:#FFFDF3;border:2px solid var(--do);border-radius:10px;padding:12px 14px;margin:12px 0}
+.wk h3{margin:0 0 4px;font:700 20px 'STIX Two Text',serif;color:var(--az)}.wk small{color:#33405e}
+.kp{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}.kp em{width:100%;font-style:normal;font-size:14px;color:#555;margin-top:6px}
+.k{font:600 17px 'STIX Two Text',serif;background:#fff;border:2px solid var(--az);color:var(--az);border-radius:6px;min-width:38px;padding:4px 8px;cursor:pointer}.k:hover{background:var(--do);color:var(--tx)}
+#wk{width:100%;min-height:210px;font:20px/1.5 'STIX Two Text',serif;padding:10px;border:2px solid var(--tx);border-radius:8px;resize:vertical;background:#fff;margin-top:6px}
+details.ay{background:#F6F8FD;border:2px solid var(--az);border-radius:10px;padding:8px 14px;margin:12px 0}details.ay summary{cursor:pointer;font:700 19px 'STIX Two Text',serif;color:var(--az)}
+details.ay ul{margin:8px 0 2px;padding-left:20px}details.ay li{margin:5px 0;font:18px 'STIX Two Text',serif}
+</style></head><body>
+<header><b>Universidad Americana · Ecuaciones Diferenciales</b><span id="nm"></span><span id="tm"></span></header>
+<div id="bar"><i></i></div>
+<main><div id="view"></div><div id="stage"></div></main><div id="sub"></div>
+<script>
+// ===== DATOS (extraídos del PDF "PARCIAL – Ecuaciones diferenciales"). o[0] = respuesta correcta; se rotan al mostrar.
+// SUPUESTO: el PDF no trae clave ni opciones → resolví cada ejercicio analíticamente y armé distractores con errores típicos; todos son de opción múltiple (autocalificables).
+// SUPUESTO: ponderación del PDF: 1)=1.5, 2)=1.0, 3)=1.5, 4)=1.0 (total 5.0), repartida en partes iguales (0.5 c/u); se escala a 100 (×20).
+// SUPUESTO: 3c se escribe y'' en el PDF (aunque el bloque dice "primer orden"); se resuelve tal cual (2º orden). Si fuera y', la solución sería y = Ce^(2x) − 12 + 2xe^(2x) (opción distractora).
+// SUPUESTO: el prompt pide 17 escenas 3D (plantilla); el PDF tiene 9 ejercicios → 9 + bienvenida + cierre = 11 escenas.
+const EX=[
+{t:'1a',g:'Separación de variables',p:.5,q:'dy/dx = 2e^(−y+x),   y(0) = 1',es:'Ejercicio 1a. Resuelve por separación de variables: la derivada de y respecto a x es igual a 2 por e elevado a menos y más x, con y de cero igual a uno.',en:'Exercise 1a. Solve by separation of variables: dy over dx equals 2 times e to the power minus y plus x, with y of zero equal to one.',
+o:['y = ln(2e^x + e − 2)','y = ln(2e^x + e)','y = 2e^(x−y) + 1','y = ln(e^x + e − 1)'],h:['Separa: e^y dy = 2e^x dx e integra.','Separate: e^y dy = 2e^x dx and integrate.'],x:['e^y = 2e^x + C; con y(0)=1 → C = e − 2.','e^y = 2e^x + C; with y(0)=1, C = e − 2.']},
+{t:'1b',g:'Separación de variables',p:.5,q:'dx + e^(−2x) dy = 0,   y(0) = 2',es:'Ejercicio 1b. Resuelve: dx más e elevado a menos 2x por dy igual a cero, con y de cero igual a dos.',en:'Exercise 1b. Solve: dx plus e to the minus 2x times dy equals zero, with y of zero equal to two.',
+o:['y = (5 − e^(2x))/2','y = (5 + e^(2x))/2','y = −e^(2x)/2 + 2','y = (5 − e^(−2x))/2'],h:['Despeja dy = −e^(2x) dx.','Isolate dy = −e^(2x) dx.'],x:['y = −e^(2x)/2 + C; con y(0)=2 → C = 5/2.','y = −e^(2x)/2 + C; with y(0)=2, C = 5/2.']},
+{t:'1c',g:'Separación de variables',p:.5,q:'dy/dx − 3x²y = 0,   y(0) = 1',es:'Ejercicio 1c. Resuelve: dy sobre dx menos 3 x al cuadrado por y igual a cero, con y de cero igual a uno.',en:'Exercise 1c. Solve: dy over dx minus 3 x squared times y equals zero, with y of zero equal to one.',
+o:['y = e^(x³)','y = 3e^(x³)','y = e^(3x²)','y = x³ + 1'],h:['dy/y = 3x² dx.','dy/y = 3x² dx.'],x:['ln y = x³ + C → y = Ce^(x³); y(0)=1 → C = 1.','ln y = x³ + C, so y = Ce^(x³); y(0)=1, C = 1.']},
+{t:'2a',g:'Ecuaciones exactas',p:.5,q:'(e^y + 6x)dx + x·e^y dy = 0',es:'Ejercicio 2a. Determina si la ecuación e a la y más 6x, dx, más x por e a la y, dy, es exacta y, de serlo, elige su solución.',en:'Exercise 2a. Determine whether the equation is exact and, if so, choose its solution.',
+o:['Exacta: x·e^y + 3x² = C','Exacta: e^y + 6x² = C','No es exacta','Exacta: x·e^y + 6x = C'],h:['Compara ∂M/∂y con ∂N/∂x.','Compare ∂M/∂y with ∂N/∂x.'],x:['M_y = e^y = N_x → exacta. F = ∫M dx = x·e^y + 3x² + g(y), g′ = 0.','M_y = e^y = N_x, so it is exact. F = x·e^y + 3x² + g(y), g′ = 0.']},
+{t:'2b',g:'Ecuaciones exactas',p:.5,q:'(2y − 1)dy + (3x + 7)dx = 0',es:'Ejercicio 2b. Determina si la ecuación 2y menos 1, dy, más 3x más 7, dx, es exacta y, de serlo, elige su solución.',en:'Exercise 2b. Determine whether the equation is exact and, if so, choose its solution.',
+o:['Exacta: (3/2)x² + 7x + y² − y = C','No es exacta','Exacta: 3x² + 7x + y² − y = C','Exacta: (3/2)x² + 7x + 2y² − y = C'],h:['M = 3x+7, N = 2y−1.','M = 3x+7, N = 2y−1.'],x:['M_y = 0 = N_x → exacta. F = (3/2)x² + 7x + y² − y = C.','M_y = 0 = N_x, so exact. F = (3/2)x² + 7x + y² − y = C.']},
+{t:'3a',g:'Homogénea de primer orden',p:.5,q:'5y′ − e^x·y = 0',es:'Ejercicio 3a. Resuelve la ecuación homogénea: 5 y prima menos e a la x por y igual a cero.',en:'Exercise 3a. Solve the homogeneous equation: 5 y prime minus e to the x times y equals zero.',
+o:['y = C·e^(e^x/5)','y = C·e^(5e^x)','y = e^x/5 + C','y = 5C·e^(e^x)'],h:['dy/y = (e^x/5) dx.','dy/y = (e^x/5) dx.'],x:['ln y = e^x/5 + C → y = C·e^(e^x/5).','ln y = e^x/5 + C, so y = C·e^(e^x/5).']},
+{t:'3b',g:'No homogénea de primer orden',p:.5,q:'y′ + 2y = 5',es:'Ejercicio 3b. Resuelve la ecuación no homogénea: y prima más 2 y igual a 5.',en:'Exercise 3b. Solve the non-homogeneous equation: y prime plus 2 y equals 5.',
+o:['y = 5/2 + C·e^(−2x)','y = 5 + C·e^(−2x)','y = 5/2 + C·e^(2x)','y = C·e^(−2x)'],h:['Factor integrante e^(2x), o solución homogénea + particular constante.','Integrating factor e^(2x), or homogeneous + constant particular solution.'],x:['y_h = Ce^(−2x); y_p = 5/2 → y = 5/2 + Ce^(−2x).','y_h = Ce^(−2x); y_p = 5/2, so y = 5/2 + Ce^(−2x).']},
+{t:'3c',g:'No homogénea (con y″)',p:.5,q:'y″ − 2y − 24 = 2e^(2x)',es:'Ejercicio 3c. Resuelve: y segunda derivada menos 2 y menos 24 igual a 2 e a la 2x.',en:'Exercise 3c. Solve: y double prime minus 2 y minus 24 equals 2 e to the 2x.',
+o:['y = C1·e^(√2·x) + C2·e^(−√2·x) − 12 + e^(2x)','y = C1·e^(√2·x) + C2·e^(−√2·x) + 12 + e^(2x)','y = C·e^(2x) − 12 + 2x·e^(2x)','y = C1·e^(2x) + C2·e^(−2x) − 12 + e^(2x)'],h:['Ecuación característica r² − 2 = 0; prueba y_p = A + Be^(2x).','Characteristic equation r² − 2 = 0; try y_p = A + Be^(2x).'],x:['r = ±√2; −2A = 24 → A = −12; 2B = 2 → B = 1.','r = ±√2; −2A = 24, A = −12; 2B = 2, B = 1.']},
+{t:'4',g:'Coeficientes constantes con condiciones iniciales',p:1,q:'y″ + y = 0,   y(π) = 0 ;  y′(π) = 1',es:'Ejercicio 4. Resuelve y segunda derivada más y igual a cero, con y de pi igual a cero y y prima de pi igual a uno.',en:'Exercise 4. Solve y double prime plus y equals zero, with y of pi equal to zero and y prime of pi equal to one.',
+o:['y = −sin x','y = sin x','y = −cos x','y = cos x − sin x'],h:['r² + 1 = 0 → y = A cos x + B sin x.','r² + 1 = 0, so y = A cos x + B sin x.'],x:['y(π) = −A = 0; y′(π) = −B = 1 → B = −1.','y(π) = −A = 0; y′(π) = −B = 1, so B = −1.']}];
+const S={name:'',i:0,screen:'cover',ans:{},hint:{},work:{},ayo:false,t0:0,lang:'es',rate:1,greet:false,pulse:0},$=s=>document.querySelector(s),SS=window.speechSynthesis;
+const GUIA={
+'1a':{ins:'Resuelve el problema de valor inicial: encuentra la función y(x) que cumpla la ecuación y además pase por el punto y(0) = 1. Trabaja en papel y elige la opción igual a tu resultado final.',
+st:['Reescribe e^(−y+x) = e^x · e^(−y) (propiedad de las potencias).','Separa variables: lo de y a la izquierda, lo de x a la derecha → e^y dy = 2e^x dx.','Integra ambos lados (agrega una sola constante C).','Usa y(0) = 1 (x = 0, y = 1) para calcular C.','Despeja y aplicando ln a ambos lados.'],
+ph:['Como e^(a+b) = e^a·e^b, la ecuación es dy/dx = 2e^x·e^(−y). Multiplica por e^y y por dx para separar.','Queda e^y dy = 2e^x dx. Como ∫e^y dy = e^y y ∫2e^x dx = 2e^x, resulta e^y = 2e^x + C.','Con x = 0, y = 1: e^1 = 2e^0 + C → C = e − 2. Finalmente aplica ln: y = ln(2e^x + C) con ese valor de C.']},
+'1b':{ins:'Resuelve el problema de valor inicial: despeja dy, integra y usa y(0) = 2 para hallar la constante. Elige la opción igual a tu resultado.',
+st:['Aísla el término con dy: e^(−2x) dy = −dx.','Multiplica por e^(2x) para dejar dy solo: dy = −e^(2x) dx.','Integra: ∫dy = −∫e^(2x) dx (recuerda ∫e^(ax) dx = e^(ax)/a).','Usa y(0) = 2 para calcular C.','Escribe y(x) con el valor de C ya calculado.'],
+ph:['Pasa dx al otro lado: e^(−2x) dy = −dx. Dividir entre e^(−2x) equivale a multiplicar por e^(2x).','Queda dy = −e^(2x) dx. Como ∫e^(2x) dx = e^(2x)/2, resulta y = −e^(2x)/2 + C.','Con x = 0, y = 2: 2 = −1/2 + C → C = 5/2. Escribe −e^(2x)/2 + 5/2 como una sola fracción.']},
+'1c':{ins:'Resuelve el problema de valor inicial separando variables y usando y(0) = 1. Elige la opción igual a tu resultado.',
+st:['Despeja la derivada: dy/dx = 3x²·y.','Separa variables: dy/y = 3x² dx.','Integra: ln|y| = x³ + C.','Aplica la exponencial: y = C·e^(x³).','Usa y(0) = 1 para calcular C.'],
+ph:['Suma 3x²y a ambos lados: dy/dx = 3x²y. Divide entre y y multiplica por dx.','∫dy/y = ln|y| y ∫3x² dx = x³. Entonces ln|y| = x³ + C, o sea y = C·e^(x³).','Evalúa en x = 0: y(0) = C·e^0 = C = 1. Sustituye ese C en y = C·e^(x³).']},
+'2a':{ins:'Decide si la ecuación diferencial es exacta. Si lo es, halla la solución implícita F(x,y) = C y elígela; si no lo es, elige la opción «No es exacta».',
+st:['Identifica M (lo que multiplica a dx) y N (lo que multiplica a dy).','Calcula ∂M/∂y y ∂N/∂x.','Compara: si son iguales la ecuación es exacta; si no, no lo es.','Integra M respecto a x: F = ∫M dx + g(y).','Deriva F respecto a y, iguala a N y halla g(y). Escribe F = C.'],
+ph:['M = e^y + 6x (acompaña a dx) y N = x·e^y (acompaña a dy).','∂M/∂y = e^y y ∂N/∂x = e^y (se deriva x, e^y queda igual). ¿Son iguales? Entonces decide si es exacta.','F = ∫(e^y + 6x) dx = x·e^y + 3x² + g(y). Al derivar en y: x·e^y + g′(y) debe ser igual a N = x·e^y, así que g′(y) = 0.']},
+'2b':{ins:'Decide si la ecuación diferencial es exacta. Si lo es, halla la solución implícita F(x,y) = C y elígela; si no lo es, elige la opción «No es exacta».',
+st:['Identifica M (lo que multiplica a dx) y N (lo que multiplica a dy).','Calcula ∂M/∂y y ∂N/∂x.','Compara: si son iguales la ecuación es exacta; si no, no lo es.','Integra M respecto a x: F = ∫M dx + g(y).','Deriva F respecto a y, iguala a N y halla g(y). Escribe F = C.'],
+ph:['M = 3x + 7 (acompaña a dx) y N = 2y − 1 (acompaña a dy).','∂M/∂y = 0 y ∂N/∂x = 0. Son iguales, por lo tanto la ecuación es exacta.','F = ∫(3x + 7) dx = (3/2)x² + 7x + g(y). Como ∂F/∂y = g′(y) = 2y − 1, entonces g(y) = y² − y. Une todo en F = C.']},
+'3a':{ins:'Es una ecuación lineal homogénea de primer orden. Se resuelve separando variables: encuentra la solución general y = C·(…) y elige la opción igual a tu resultado.',
+st:['Despeja y′: y′ = (e^x/5)·y.','Separa variables: dy/y = (e^x/5) dx.','Integra ambos lados.','Aplica la exponencial y reúne las constantes en una sola C.'],
+ph:['Divide entre 5 y entre y: dy/y = (e^x/5) dx.','∫dy/y = ln|y| y ∫(e^x/5) dx = e^x/5. Queda ln|y| = e^x/5 + C₁.','Aplica e^ a ambos lados: y = e^(C₁)·e^(e^x/5) = C·e^(e^x/5). El 5 se queda dentro del exponente, dividiendo a e^x.']},
+'3b':{ins:'Es una ecuación lineal no homogénea de primer orden. Encuentra la solución general y = y_h + y_p y elige la opción igual a tu resultado.',
+st:['Resuelve la homogénea y′ + 2y = 0 para obtener y_h.','Como el lado derecho es constante, propón y_p = A.','Sustituye y_p en la ecuación original y despeja A.','Suma: y = y_h + y_p.'],
+ph:['y′ + 2y = 0 → dy/y = −2 dx → y_h = C·e^(−2x).','Si y_p = A, entonces y_p′ = 0. Sustituye en la ecuación: 0 + 2A = 5.','De 2A = 5 sale A = 5/2. Suma y = y_h + y_p y revisa el signo del exponente de e.']},
+'3c':{ins:'Ecuación lineal de 2.º orden con coeficientes constantes. Escríbela como y″ − 2y = 24 + 2e^(2x) y halla la solución general y = y_h + y_p. Elige la opción igual a tu resultado.',
+st:['Homogénea: y″ − 2y = 0 → ecuación característica r² − 2 = 0.','Halla las raíces y escribe y_h = C₁e^(r₁x) + C₂e^(r₂x).','Propón y_p = A + B·e^(2x) (por el 24 constante y el 2e^(2x)).','Calcula y_p″, sustituye en y″ − 2y y compara coeficientes con 24 + 2e^(2x).','Suma: y = y_h + y_p.'],
+ph:['r² − 2 = 0 → r = ±√2 (raíces reales distintas), así que y_h = C₁e^(√2·x) + C₂e^(−√2·x).','Con y_p = A + B·e^(2x) se tiene y_p″ = 4B·e^(2x). Entonces y_p″ − 2y_p = −2A + 2B·e^(2x).','Iguala con 24 + 2e^(2x): −2A = 24 → A = −12 y 2B = 2 → B = 1. Suma y_h + y_p.']},
+'4':{ins:'Resuelve el problema de valor inicial de 2.º orden: halla la solución general y usa las DOS condiciones, y(π) = 0 y y′(π) = 1, para calcular las dos constantes. Elige la opción igual a tu resultado.',
+st:['Ecuación característica: r² + 1 = 0 → r = ±i.','Solución general: y = A·cos x + B·sin x.','Deriva: y′ = −A·sin x + B·cos x.','Aplica y(π) = 0 y calcula A.','Aplica y′(π) = 1, calcula B y escribe y(x).'],
+ph:['Raíces complejas r = ±i (parte real 0, parte imaginaria 1) → y = A·cos x + B·sin x.','Recuerda cos π = −1 y sin π = 0. Entonces y(π) = −A = 0 → A = 0.','y′(π) = −A·sin π + B·cos π = −B = 1 → B = −1. Sustituye A y B en la solución general.']}};
+const KP=[['Operaciones','+ − × ÷ = ≠ ± ( ) / ·'],['Cálculo','∫ dx dy dy/dx ∂ ∂M/∂y ∂N/∂x ′ ″ ln| |'],['Potencias y funciones','^ ² ³ √ e^( ln sin cos π ½'],['Letras y constantes','x y C C₁ C₂ A B F g(y) M N r₁ r₂ i α β'],['Flechas','→ ⇒']];
+const AYU={sep:['Forma: dy/dx = f(x)·g(y) → dy/g(y) = f(x) dx','∫dy/y = ln|y| + C','∫e^(ax) dx = e^(ax)/a + C','∫xⁿ dx = x^(n+1)/(n+1) + C','e^(a+b) = e^a·e^b ;  e^(ln u) = u ;  ln(e^u) = u','Condición inicial: sustituye x₀ y y₀ para hallar C'],
+ex:['Forma: M dx + N dy = 0','Es exacta si ∂M/∂y = ∂N/∂x','F = ∫M dx + g(y)','g′(y) = N − ∂F/∂y  (debe depender solo de y)','Solución: F(x,y) = C','∫e^x dx = e^x ;  ∫x dx = x²/2 ;  ∫k dx = kx'],
+l1:['Forma: y′ + P·y = Q','Homogénea: y′ + P·y = 0 → y_h = C·e^(−∫P dx)','Solución general: y = y_h + y_p','Si Q es constante, prueba y_p = A (entonces y_p′ = 0)','Alternativa: factor integrante μ = e^(∫P dx)'],
+c2:['y″ + a·y′ + b·y = 0 → r² + a·r + b = 0','Raíces reales distintas: y = C₁e^(r₁x) + C₂e^(r₂x)','Raíz doble: y = (C₁ + C₂x)e^(rx)','Raíces complejas α ± βi: y = e^(αx)(A cos βx + B sin βx)','No homogénea: y = y_h + y_p (constante → prueba A; e^(kx) → prueba B·e^(kx))','(sin x)′ = cos x ;  (cos x)′ = −sin x ;  sin π = 0 ;  cos π = −1']},
+AM={'1a':'sep','1b':'sep','1c':'sep','2a':'ex','2b':'ex','3a':'sep','3b':'l1','3c':'c2','4':'c2'},esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const REV={
+'1a':{sol:['Reescribir: dy/dx = 2e^x·e^(−y).','Separar: e^y dy = 2e^x dx.','Integrar: e^y = 2e^x + C.','Condición y(0) = 1: e = 2 + C → C = e − 2.','Despejar con ln: y = ln(2e^x + e − 2).'],
+err:['Olvidaste restar el 2 al hallar C: con x = 0, e^1 = 2·e^0 + C = 2 + C, entonces C = e − 2 (no C = e).','No es una solución: todavía contiene y en el lado derecho. Hay que separar variables, integrar y despejar y con ln.','Perdiste el factor 2 al integrar: ∫2e^x dx = 2e^x. Con e^y = 2e^x + C, la condición inicial da C = e − 2.']},
+'1b':{sol:['Aislar: e^(−2x) dy = −dx → dy = −e^(2x) dx.','Integrar: y = −e^(2x)/2 + C.','Condición y(0) = 2: 2 = −1/2 + C → C = 5/2.','Resultado: y = (5 − e^(2x))/2.'],
+err:['Error de signo: dy = −e^(2x) dx y el signo negativo se conserva al integrar, así y = −e^(2x)/2 + C.','La constante no es 2: al usar x = 0 hay que incluir el término −1/2, por eso 2 = −1/2 + C y C = 5/2.','Error en el exponente: al pasar e^(−2x) al otro lado se invierte y queda e^(+2x), no e^(−2x).']},
+'1c':{sol:['dy/dx = 3x²·y → dy/y = 3x² dx.','Integrar: ln|y| = x³ + C → y = C·e^(x³).','Condición y(0) = 1: C = 1.','Resultado: y = e^(x³).'],
+err:['La constante no es 3: el 3 se integra junto con x² (∫3x² dx = x³). Con y(0) = C·e^0 = C = 1.','Integraste mal el exponente: ∫3x² dx = x³ (sube la potencia y se divide). 3x² es la derivada de x³, no su integral.','Al integrar dy/y se obtiene ln|y|, no y. La solución es exponencial: y = C·e^(x³).']},
+'2a':{sol:['M = e^y + 6x y N = x·e^y.','∂M/∂y = e^y = ∂N/∂x → la ecuación es exacta.','F = ∫M dx = x·e^y + 3x² + g(y).','∂F/∂y = x·e^y + g′(y) = N → g′(y) = 0.','Solución: x·e^y + 3x² = C.'],
+err:['Al integrar M respecto a x, e^y es constante: ∫e^y dx = x·e^y (no e^y) y ∫6x dx = 3x² (no 6x²).','Sí es exacta: ∂M/∂y = e^y y ∂N/∂x = e^y son iguales. Compara siempre las dos derivadas antes de decidir.','Integraste mal 6x: ∫6x dx = 3x² (la potencia sube y se divide entre 2), no 6x.']},
+'2b':{sol:['M = 3x + 7 y N = 2y − 1.','∂M/∂y = 0 = ∂N/∂x → la ecuación es exacta.','F = ∫M dx = (3/2)x² + 7x + g(y).','∂F/∂y = g′(y) = 2y − 1 → g(y) = y² − y.','Solución: (3/2)x² + 7x + y² − y = C.'],
+err:['Sí es exacta: derivar 3x + 7 respecto a y da 0 y derivar 2y − 1 respecto a x también da 0. Son iguales.','Falta dividir entre 2 al integrar 3x: ∫3x dx = (3/2)x², no 3x².','Integraste mal 2y: ∫(2y − 1) dy = y² − y, no 2y² − y (al integrar 2y se obtiene y²).']},
+'3a':{sol:['y′ = (e^x/5)·y → dy/y = (e^x/5) dx.','Integrar: ln|y| = e^x/5 + C₁.','Aplicar exponencial: y = C·e^(e^x/5).'],
+err:['El 5 divide: de 5y′ = e^x·y sale dy/y = (e^x/5) dx, así el exponente es e^x/5, no 5e^x.','Faltó la exponencial: ln|y| = e^x/5 + C; para despejar y hay que aplicar e^ a ambos lados.','Se perdió el 5 del exponente: ∫(e^x/5) dx = e^x/5 y queda dentro de e^( ); no se saca como factor.']},
+'3b':{sol:['Homogénea: y′ + 2y = 0 → y_h = C·e^(−2x).','Particular: y_p = A → 2A = 5 → A = 5/2.','Resultado: y = 5/2 + C·e^(−2x).'],
+err:['La solución particular no es 5: al sustituir y_p = A queda 2A = 5, entonces A = 5/2.','Error de signo en el exponente: y′ = −2y da y_h = C·e^(−2x), no e^(2x).','Esa es solo la solución homogénea. Falta sumar y_p = 5/2 porque el lado derecho no es cero.']},
+'3c':{sol:['Escribir y″ − 2y = 24 + 2e^(2x); característica r² − 2 = 0 → r = ±√2.','y_h = C₁e^(√2·x) + C₂e^(−√2·x).','y_p = A + B·e^(2x): −2A + 2B·e^(2x) = 24 + 2e^(2x) → A = −12, B = 1.','Resultado: y = C₁e^(√2·x) + C₂e^(−√2·x) − 12 + e^(2x).'],
+err:['Error de signo en A: −2A = 24 → A = −12 (no +12).','Esa forma corresponde a una ecuación de primer orden. Aquí hay y″ (segundo orden), por eso la solución necesita dos constantes C₁ y C₂.','Raíces mal calculadas: r² − 2 = 0 → r² = 2 → r = ±√2, no ±2.']},
+'4':{sol:['r² + 1 = 0 → r = ±i → y = A·cos x + B·sin x.','y(π) = A·cos π = −A = 0 → A = 0.','y′ = B·cos x → y′(π) = −B = 1 → B = −1.','Resultado: y = −sin x.'],
+err:['Error de signo en B: y′(π) = B·cos π = −B = 1 → B = −1, porque cos π = −1.','Con y(π) = 0 se obtiene A = 0, así que no puede haber término en cos x. Además −cos π = 1, no 0.','No cumple y(π) = 0: cos π − sin π = −1. Primero hay que hallar A = 0 con la primera condición.']}};
+const TN={sep:'Separación de variables',ex:'Ecuaciones exactas',l1:'Lineal de primer orden',c2:'Coeficientes constantes de 2.º orden'},
+TIP={sep:'separa las variables antes de integrar, integra cada lado, agrega la constante C y usa la condición inicial al final para calcularla. Revisa los factores numéricos y los signos.',ex:'calcula primero ∂M/∂y y ∂N/∂x y compáralas; solo si son iguales integra M respecto a x, determina g(y) y escribe F(x,y) = C. Integra término a término.',l1:'resuelve primero la homogénea (y_h), propón y_p según el lado derecho, calcula su constante y suma y = y_h + y_p. Cuida el signo del exponente.',c2:'escribe la ecuación característica, clasifica las raíces, arma y_h, y si hay lado derecho halla y_p comparando coeficientes. Con condiciones iniciales, cuida los signos de sin y cos.'};
+const RCSS=`.rv{background:#fff;border:2px solid #16181D;border-left:8px solid #999;border-radius:12px;padding:14px 18px;margin:16px 0;text-align:left}.rv.ok{border-left-color:#17763A}.rv.no{border-left-color:#B3261E}.rv.pe{border-left-color:#F2B705}
+.rv h3{margin:0 0 6px;font-family:'STIX Two Text',serif;color:#0B2A6F}.rv .eq{font-size:22px}.rv pre{white-space:pre-wrap;background:#FFFDF3;border:1px solid #F2B705;border-radius:8px;padding:8px;font:17px 'STIX Two Text',serif}
+.fx{background:#FDE7E5;border:2px solid #B3261E;border-radius:8px;padding:8px 12px;margin:8px 0}.fx2{background:#FFF3C4;border:2px dashed #F2B705;border-radius:8px;padding:8px 12px;margin:8px 0}
+.rv ol{margin:4px 0;padding-left:24px}.rv .sl li{font-family:'STIX Two Text',serif;font-size:18px}`,
+RPG=`body{margin:0;background:#EEF2FA;font:17px/1.5 'Source Sans 3',Arial,sans-serif;color:#16181D}.rp{max-width:900px;margin:auto;padding:20px}h1,h2{font-family:'STIX Two Text',serif;color:#0B2A6F}
+.sc{font:700 48px 'STIX Two Text',serif;color:#17763A}table{border-collapse:collapse;width:100%;background:#fff}td,th{border:1px solid #16181D;padding:6px 10px;text-align:left}.eq{font-family:'STIX Two Text',serif;background:#F6F8FD;border-left:6px solid #F2B705;padding:8px 12px;margin:8px 0}
+@media print{body{background:#fff}.rv{break-inside:avoid}}`;
+const rvH=i=>{const e=EX[i],g=GUIA[e.t],v=REV[e.t],a=S.ans[i],st=a==null?'pe':a==0?'ok':'no';
+ return `<div class="rv ${st}"><h3>${e.t}) ${e.g} — ${a==null?'Sin responder':a==0?'✔ Correcta':'✖ Incorrecta'} <small>(${e.p*20} pts · pistas usadas: ${S.hint[i]||0}/3)</small></h3><div class=eq>${e.q}</div>`+
+ `<p><b>Tu respuesta:</b> ${a==null?'(sin responder)':esc(e.o[a])}<br><b>Respuesta correcta:</b> ${esc(e.o[0])}</p>`+(S.work[i]?`<p><b>Tu procedimiento:</b></p><pre>${esc(S.work[i])}</pre>`:'')+
+ (a==0?'':`<div class=fx><b>${a==null?'No respondiste este ejercicio.':'Por qué falló tu respuesta:'}</b> ${a==null?'Sigue el esquema y compara con la solución de abajo.':v.err[a-1]}</div>`)+
+ `<p><b>Esquema del procedimiento:</b></p><ol>${g.st.map(s=>`<li>${s}</li>`).join('')}</ol><p><b>Solución paso a paso:</b></p><ol class=sl>${v.sol.map(s=>`<li>${s}</li>`).join('')}</ol>`+
+ (a==0?'':`<div class=fx2><b>Para la próxima vez:</b> ${TIP[AM[e.t]]}</div>`)+`</div>`};
+// ===== 3D: un único renderer; se libera cada escena. Cada figura ilustra la gráfica/superficie de la solución del ejercicio.
+const MB=c=>new THREE.MeshStandardMaterial({color:c,metalness:.3,roughness:.4}),cl=v=>Math.max(-2.5,Math.min(2.5,v));
+function curve(fn,a,b,k=1){const g=new THREE.Group(),p=[];for(let i=0;i<=100;i++){const x=a+(b-a)*i/100;p.push(new THREE.Vector3(x*.6,cl(fn(x)*k),0))}
+ g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(p),150,.07,8),MB(0xF2B705)));const gr=new THREE.GridHelper(5,10,0xffffff,0x4a64a8);gr.rotation.x=Math.PI/2;g.add(gr);return g}
+function surf(fn,k){const g=new THREE.Group(),geo=new THREE.PlaneGeometry(3.4,3.4,28,28),P=geo.attributes.position;
+ for(let i=0;i<P.count;i++)P.setZ(i,cl(fn(P.getX(i)*.9,P.getY(i)*.9)*k));geo.computeVertexNormals();
+ g.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x2F5BD0,side:2})),new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xF2B705,wireframe:true})));g.rotation.x=-1.1;return g}
+const E=Math.exp,SC=[()=>new THREE.Mesh(new THREE.TorusKnotGeometry(1,.3,120,16),MB(0xF2B705)), // bienvenida: nudo = "curva" integral
+()=>curve(x=>Math.log(2*E(x)+Math.E-2),-3,3),()=>curve(x=>(5-E(2*x))/2,-3,1.5),()=>curve(x=>E(x**3),-3,1.2),
+()=>surf((x,y)=>x*E(y)+3*x*x,.25),()=>surf((x,y)=>1.5*x*x+7*x+y*y-y,.15), // 2a/2b: superficie potencial F(x,y)
+()=>curve(x=>E(E(x)/5),-3,3),()=>curve(x=>2.5+E(-2*x),-2,3),()=>curve(x=>E(2*x)-12,-3,3,.4),()=>curve(x=>-Math.sin(x),-5,5),
+()=>{const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(1.3,1),new THREE.MeshBasicMaterial({color:0xF2B705,wireframe:true})),new THREE.Mesh(new THREE.SphereGeometry(.9,24,24),MB(0x17763A)));return g}];
+let R,sc,cam,G,cur=-1,hx=0;
+function init3(){const st=$('#stage');try{if(!window.THREE)throw 0;R=new THREE.WebGLRenderer({antialias:true,alpha:true});st.appendChild(R.domElement);sc=new THREE.Scene();cam=new THREE.PerspectiveCamera(45,1,.1,100);cam.position.z=6;
+ sc.add(new THREE.AmbientLight(0xffffff,.7));const d=new THREE.DirectionalLight(0xffffff,.9);d.position.set(3,4,5);sc.add(d);
+ const rs=()=>{R.setSize(st.clientWidth,st.clientHeight);cam.aspect=st.clientWidth/st.clientHeight;cam.updateProjectionMatrix()};rs();addEventListener('resize',rs);
+ st.onpointermove=e=>{hx=(e.offsetX/st.clientWidth-.5)};loop()}catch(e){R=null;st.textContent='∫ y′ dx'} } // fallback sin WebGL
+function loop(){requestAnimationFrame(loop);if(!G)return;G.rotation.y+=.006+hx*.03;if(S.pulse>0){S.pulse-=.02;G.scale.setScalar(1+Math.sin(Math.max(S.pulse,0)*Math.PI)*.35)}R.render(sc,cam)}
+function scene(n){if(!R||n==cur)return;cur=n;if(G){sc.remove(G);G.traverse(o=>{o.geometry&&o.geometry.dispose();o.material&&o.material.dispose()})}G=new THREE.Group();G.add(SC[n]());sc.add(G)}
+// ===== AUDIO
+const sub=t=>{const s=$('#sub');s.textContent=t;s.style.display=t?'block':'none'},stopA=()=>{SS&&SS.cancel();sub('')},hv=l=>SS&&SS.getVoices().some(v=>v.lang.toLowerCase().startsWith(l));
+function speak(es,en,l){S.lang=l;const t=l=='es'?es:en;sub(t);if(!SS||(SS.getVoices().length&&!hv(l)))return void setTimeout(()=>sub(''),8000);
+ SS.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=l=='es'?'es-ES':'en-US';u.rate=S.rate;u.onend=()=>sub('');SS.speak(u)}
+function upd(){['es','en'].forEach(l=>{const b=$('#b'+l);if(b)b.disabled=!SS||(SS.getVoices().length>0&&!hv(l))})}
+if(SS)SS.onvoiceschanged=upd;
+// ===== PANTALLAS
+const au=()=>`<div style="margin-top:12px"><button class=b id=bes data-a=say data-v=es>🇪🇸 Español</button><button class=b id=ben data-a=say data-v=en>🇬🇧 English</button><button class=b data-a=stop>⏹ Detener</button><label> Velocidad <input type=range min=.6 max=1.4 step=.1 value=${S.rate} oninput="S.rate=+this.value"></label></div>`;
+const cover=()=>`<div class="card tc"><h1>EJERCICIOS DE ECUACIONES DIFERENCIALES: PARCIAL</h1><p>Separación de variables · Exactas · Lineales · Coeficientes constantes</p><p><b>Materia:</b> ECUACIONES DIFERENCIALES<br><b>Programa:</b> Ingeniería en Seguridad y Salud en el Trabajo<br><b>Institución:</b> Universidad Americana<br><b>DOCENTE:</b> NICOLAS BILBAO<br><b>SEMANA:</b> 3</p><button class=b data-a=start>Comenzar simulación</button>${au()}</div>`;
+const nameS=()=>S.greet?`<div class="card tc"><h2>Bienvenido/a ingeniero/a, ${S.name}</h2><button class=b data-a=begin>Ir al ejercicio 1</button>${au()}</div>`:`<div class="card tc"><h2>Datos del estudiante</h2><p>Nombre completo:</p><input type=text id=inp maxlength=80 autofocus><div class=er id=er></div><br><button class=b data-a=cont>Continuar</button>${au()}</div>`;
+function exS(){const e=EX[S.i],g=GUIA[e.t],a=S.ans[S.i],r=(S.i*3+1)%4,L=S.lang=='en'?1:0,n=S.hint[S.i]||0;
+ return `<div class=card><small>Ejercicio ${S.i+1} de ${EX.length} · ${e.p*20} pts</small><h2>${e.t}) ${e.g}</h2><p>${e.es}</p><div class=eq>${e.q}</div>`+
+ `<div class=ins><h3>📋 Instrucciones</h3>${g.ins}<small>Cómo responder: 1) sigue el esquema en papel, 2) pide pistas solo si te atascas (se muestran de una en una), 3) elige la opción que coincide con tu resultado.</small></div>`+
+ `<div class=esq><h3>🧭 Esquema del procedimiento</h3><ol class=flow>${g.st.map(s=>`<li>${s}</li>`).join('')}</ol></div>`+
+ `<div class=wk><h3>✏️ Espacio de trabajo</h3><small>Resuelve aquí, paso a paso, siguiendo el esquema. Toca un botón para insertar el símbolo donde está el cursor.</small>`+KP.map(([n,t])=>`<div class=kp><em>${n}</em>${t.split(' ').map(s=>`<button class=k data-a=sym data-v="${s}">${s}</button>`).join('')}</div>`).join('')+`<textarea id=wk spellcheck=false placeholder="Paso 1: …&#10;Paso 2: …">${esc(S.work[S.i]||'')}</textarea><button class=b data-a=clr>🗑 Borrar mi trabajo</button></div>`+
+ `<details class=ay ${S.ayo?'open':''} ontoggle="S.ayo=this.open"><summary>📚 Ayudas y fórmulas</summary><ul>${AYU[AM[e.t]].map(s=>`<li>${s}</li>`).join('')}</ul></details>`+
+ `<button class=b data-a=hint ${n>=3?'disabled':''}>💡 ${n?'Siguiente pista':'Pedir pista'} (${n}/3)</button>`+g.ph.slice(0,n).map((h,k)=>`<div class=hn><b>Pista ${k+1}:</b> ${h}</div>`).join('')+
+ `<h3 style="margin:16px 0 4px">Elige tu respuesta</h3>`+
+ [0,1,2,3].map(k=>(k+r)%4).map(k=>`<button class="o ${a==k?(k==0?'ok':'no'):''}" data-a=pick data-v=${k}>${e.o[k]}</button>`).join('')+
+ (a!=null?`<div class="fb ${a==0?'g':'r'}"><b>${a==0?'✔ Correcto.':'✖ Incorrecto. Revisa el esquema y las pistas e inténtalo de nuevo.'}</b> ${e.x[L]}${a>0?`<br><b>Por qué falló:</b> ${REV[e.t].err[a-1]}`:''}</div>`:'')+au()+
+ `<div style="margin-top:12px"><button class=b data-a=prev ${S.i?'':'disabled'}>← Anterior</button><button class=b data-a=next>${S.i==EX.length-1?'Finalizar →':'Siguiente →'}</button></div></div>`}
+function res(){let s=0,ok=0,no=0,pe=0;EX.forEach((e,i)=>{const a=S.ans[i];a==null?pe++:a==0?(ok++,s+=e.p):no++});return{s:Math.round(s/5*1000)/10,ok,no,pe}}
+const tmS=()=>{const t=Math.floor((Date.now()-S.t0)/1000);return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
+function endS(){const r=res();return `<div class="card tc"><h1>Resultados</h1><h2 style="font-size:48px;color:var(--ve)">${r.s} / 100</h2><p>Aciertos: ${r.ok} · Errores: ${r.no} · Sin responder: ${r.pe}<br>Tiempo: ${tmS()}</p>`+
+ EX.map((e,i)=>`<div>${e.t}) ${S.ans[i]==null?'—':S.ans[i]==0?'✔':'✖'}</div>`).join('')+`<button class=b data-a=pdf>⬇ Descargar PDF</button><button class=b data-a=html>🌐 Descargar página HTML</button><div>${EX.map((e,i)=>rvH(i)).join('')}</div><button class=b data-a=prev>← Revisar</button><button class=b data-a=redo>Reiniciar</button>${au()}</div>`}
+function render(){stopA();const sc_=S.screen;$('#nm').textContent=S.name?'Estudiante: '+S.name:'';
+ $('#bar i').style.width=sc_=='ex'?(S.i+1)/EX.length*100+'%':sc_=='end'?'100%':'0';scene(sc_=='ex'?S.i+1:sc_=='end'?EX.length+1:0);
+ $('#view').innerHTML={cover,name:nameS,ex:exS,end:endS}[sc_]();upd()}
+const TX=()=>S.screen=='ex'?[EX[S.i].es,EX[S.i].en]:S.screen=='end'?['Resultados finales. Puedes descargar el PDF.','Final results. You can download the PDF.']:S.screen=='name'?['Escribe tu nombre completo y pulsa continuar.','Type your full name and press continue.']:['Simulador de ecuaciones diferenciales del parcial. Pulsa comenzar simulación.','Differential equations midterm simulator. Press start simulation.'];
+const A={start(){S.screen='name';render()},
+ cont(){const v=$('#inp').value.trim();if(!v||!/\p{L}/u.test(v))return void($('#er').textContent='Escribe tu nombre completo (no solo números).');
+  S.name=v;S.t0=Date.now();setInterval(()=>$('#tm').textContent='⏱ '+tmS(),1000);S.greet=true;render();speak('Bienvenido/a ingeniero/a, '+v,'Welcome, engineer '+v,'es')},
+ begin(){S.screen='ex';S.i=0;render()},say:l=>speak(...TX(),l),stop:stopA,sym(v){const t=$('#wk');if(!t||!v)return;const s=t.selectionStart,e=t.selectionEnd;t.value=t.value.slice(0,s)+v+t.value.slice(e);t.focus();t.selectionStart=t.selectionEnd=s+v.length;S.work[S.i]=t.value},clr(){S.work[S.i]='';render()},hint(){S.hint[S.i]=Math.min(3,(S.hint[S.i]||0)+1);render()},
+ pick(k){k=+k;S.ans[S.i]=k;const e=EX[S.i];render();if(k==0)S.pulse=1;const L=S.lang=='en';speak((k==0?'¡Correcto! ':'Incorrecto. ')+e.x[0],(k==0?'Correct! ':'Incorrect. ')+e.x[1],S.lang)},
+ prev(){if(S.screen=='end')S.screen='ex';else S.i--;render()},next(){if(S.i==EX.length-1)S.screen='end';else S.i++;render()},
+ redo(){S.ans={};S.hint={};S.work={};S.i=0;S.screen='ex';S.t0=Date.now();render()},
+ html(){const r=res(),n=EX.reduce((s,_,i)=>s+(S.hint[i]||0),0),bad=EX.filter((e,i)=>S.ans[i]!=0),
+  rp=bad.length?`<h2>Qué repasar</h2><ul>${[...new Set(bad.map(e=>AM[e.t]))].map(m=>`<li><b>${TN[m]}:</b> ${TIP[m]}</li>`).join('')}</ul>`:'<h2>¡Excelente! Respondiste todo correctamente.</h2>',
+  h=`<!DOCTYPE html><html lang=es><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Informe – ${esc(S.name)}</title><link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" rel=stylesheet><style>${RPG}${RCSS}</style></head><body><div class=rp><h1>Informe del simulador: Ecuaciones Diferenciales (Parcial)</h1>`+
+  `<p><b>DOCENTE:</b> NICOLAS BILBAO · <b>SEMANA:</b> 3<br><b>Materia:</b> Ecuaciones Diferenciales · <b>Programa:</b> Ingeniería en Seguridad y Salud en el Trabajo · <b>Institución:</b> Universidad Americana<br><b>Estudiante:</b> ${esc(S.name)}<br><b>Fecha:</b> ${new Date().toLocaleString()} · <b>Tiempo:</b> ${tmS()}</p>`+
+  `<div class=sc>${r.s} / 100</div><p>Aciertos: ${r.ok} · Errores: ${r.no} · Sin responder: ${r.pe} · Pistas usadas: ${n}</p><table><tr><th>Ejercicio</th><th>Tema</th><th>Puntos</th><th>Resultado</th><th>Pistas</th></tr>${EX.map((e,i)=>`<tr><td>${e.t}</td><td>${e.g}</td><td>${e.p*20}</td><td>${S.ans[i]==null?'Sin responder':S.ans[i]==0?'✔ Correcta':'✖ Incorrecta'}</td><td>${S.hint[i]||0}/3</td></tr>`).join('')}</table>${rp}<h2>Detalle por ejercicio</h2>${EX.map((e,i)=>rvH(i)).join('')}</div></body></html>`,
+  a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h],{type:'text/html'}));a.download='informe_'+S.name.replace(/\s+/g,'_')+'.html';a.click()},
+ pdf(){const J=window.jspdf&&window.jspdf.jsPDF;if(!J)return alert('jsPDF no cargó (revisa tu conexión).');const d=new J(),r=res();let y=15;
+  const P=s=>String(s).replace(/−/g,'-').replace(/√/g,'sqrt').replace(/π/g,'pi').replace(/[·]/g,'*').replace(/[→]/g,'->').replace(/[′]/g,"'").replace(/[″]/g,"''").replace(/∫/g,'int ').replace(/∂/g,'d').replace(/⇒/g,'=>').replace(/≠/g,'!=').replace(/₁/g,'_1').replace(/₂/g,'_2').replace(/[^\x00-\xFF]/g,'?');
+  const w=(t,z=10,b=0)=>{d.setFontSize(z);d.setFont('helvetica',b?'bold':'normal');d.splitTextToSize(P(t),180).forEach(l=>{if(y>280){d.addPage();y=15}d.text(l,15,y);y+=z/2+2})};
+  w('Ejercicios de Ecuaciones Diferenciales: Parcial',16,1);w('DOCENTE: NICOLAS BILBAO   SEMANA: 3');w('Estudiante: '+S.name+'   Fecha: '+new Date().toLocaleString()+'   Tiempo: '+tmS());w('Puntaje final: '+r.s+'/100 (aciertos '+r.ok+', errores '+r.no+', sin responder '+r.pe+')',12,1);y+=4;
+  EX.forEach((e,i)=>{const a=S.ans[i];w(e.t+') '+e.g+'  ['+e.p*20+' pts]',11,1);w('Enunciado: '+e.q);w('Respuesta dada: '+(a==null?'(sin responder)':e.o[a]));w('Resultado: '+(a==null?'Sin responder':a==0?'Correcta':'Incorrecta. Correcta: '+e.o[0]));w('Pistas usadas: '+(S.hint[i]||0)+'/3');if(S.work[i])w('Procedimiento del estudiante:\n'+S.work[i]);const v=REV[e.t];if(a!=0)w(a==null?'No respondiste este ejercicio. Sigue el esquema y compara con la solución.':'Por qué falló: '+v.err[a-1]);w('Esquema: '+GUIA[e.t].st.map((s,k)=>(k+1)+') '+s).join('  '));w('Solución: '+v.sol.map((s,k)=>(k+1)+') '+s).join('  '));if(a!=0)w('Para la próxima vez: '+TIP[AM[e.t]]);y+=3});
+  d.save('resultado_'+S.name.replace(/\s+/g,'_')+'.pdf')}};
+$('#view').onclick=e=>{const b=e.target.closest('[data-a]');if(b&&!b.disabled)A[b.dataset.a](b.dataset.v)};
+$('#view').oninput=e=>{if(e.target.id=='wk')S.work[S.i]=e.target.value};
+addEventListener('keydown',e=>{if(e.key=='Enter'&&S.screen=='name'&&!S.greet)A.cont()});
+document.head.insertAdjacentHTML('beforeend','<style>'+RCSS+'</style>');init3();render();
+</script></body></html>
